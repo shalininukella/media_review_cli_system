@@ -23,6 +23,7 @@ class User(Base):
     name = Column(String, unique=True, nullable=False)
 
     reviews = relationship("Reviews", back_populates="user")
+    favourites = relationship("Favourites", back_populates="user") #for may to many for observer
 
 
 class Media(Base):
@@ -32,13 +33,14 @@ class Media(Base):
     type = Column(String, nullable=False)  # movie, show, song, # This column distinguishes the subclass
 
     reviews = relationship("Reviews", back_populates="media")
+    favourited_by = relationship("Favourites", back_populates="media") #for may to many for observer
 
     __mapper_args__ = {
         "polymorphic_on" : type, # Tells SQLAlchemy to use 'type' for subclass mapping
         "polymorphic_identity": "media" # Identity for the base class
     }
 
-#single table inheritance for all the media types
+#single table inheritance for all the media types for factory pattern
 class Movie(Media):
     __mapper_args__ = {
         "polymorphic_identity": "movie" # Identity for Movie subclass
@@ -53,5 +55,16 @@ class Song(Media):
     __mapper_args__ = {
         "polymorphic_identity" : "song"
     }
+
+#association table or the bridge betweent User and the Media table to form many-to-many relationship btw them
+class Favourites(Base):
+    __tablename__ = "favourites"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    media_id = Column(Integer, ForeignKey("media.id"))
+
+    user = relationship("User", back_populates="favourites")
+    media = relationship("Media", back_populates="favourited_by")
+
 
 

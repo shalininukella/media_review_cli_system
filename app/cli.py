@@ -1,10 +1,12 @@
 """
-To handle  commands like --list, --review, --search, and --show-reviews
+handles commands like --list, --review, --search, --show-reviews
 """
 
 import argparse
 from app.db import get_session
-from app.models import Media, Reviews, User
+from app.models import Media, Reviews, User, Favourites
+from app.observer import NotificationService
+from app.observer_manager import ReviewNotifier
 
 
 def list_media():
@@ -35,17 +37,23 @@ def add_reviews(media_id, rating, comment):
     session = get_session()
 
     user_id = int(input("Enter the user Id: "))
-    user = session.query(User).get(user_id) 
+    user = session.query(User).get(user_id)
     if not user:
         print("No user found.")
         return
 
-    reviews = Reviews(
-        user_id=user_id, media_id=media_id, rating=rating, comment=comment
-    )
-    session.add(reviews)
+    review = Reviews(user_id=user_id, media_id=media_id, rating=rating, comment=comment)
+    session.add(review)
     session.commit()
     print("Review added successfully!")
+
+    # notify the observers
+    media = session.query(Media).filter_by(id=media_id).first()
+
+    notifier = ReviewNotifier()
+    observer = NotificationService()
+    notifier.attach(observer)
+    notifier.notify(media, review, session)
 
 
 def list_reviews():
@@ -59,6 +67,7 @@ def list_reviews():
         print(f"[{r.id}] {r.user.id} ({r.media.title}), {r.rating}, {r.comment}")
 
 
+# for factory
 from app.media_factory import MediaFactory
 
 
@@ -68,6 +77,68 @@ def add_media(title, media_type):
     session.add(media_row)
     session.commit()
     print(f"Added {media_type} '{title}' to database!")
+
+
+# for observer
+def add_favourite(media_id, user_id):
+    session = get_session()
+    user = session.query(User).get(user_id)
+    media = session.query(Media).get(media_id)
+
+    if not user:
+        print("user not found")
+        return
+
+    elif not media:
+        print("media not found")
+        return
+
+    # when both user and media exists
+    existing_fav = (
+        session.query(Favourites).filter_by(user_id=user.id, media_id=media.id).first()
+    )
+    if existing_fav:
+        print(f"'{media.title}' is already in your favorites.")
+        return
+
+    fav = Favourites(user_id=user.id, media_id=media.id)
+    session.add(fav)
+    session.commit()
+    print(f"Added '{media.title}' to your favorites.")
+
+
+def remove_favourite(media_id, user_id):
+    session = get_session()
+    user = session.query(User).get(user_id)
+
+    if not user:
+        print("no user found")
+        return
+
+    fav = (
+        session.query(Favourites).filter_by(user_id=user.id, media_id=media_id).first()
+    )
+
+    if not fav:
+        print("Media not found in favorites.")
+        return
+
+    session.delete(fav)
+    session.commit()
+    print(f"Removed media ID {media_id} from favorites.")
+
+
+def show_favourites(user_id):
+    session = get_session()
+    user_favourites = session.query(Favourites).filter_by(user_id=user_id).all()
+
+    if not user_favourites:
+        print("You haven’t favorited any media yet.")
+        return
+
+    print("Your favourites:")
+    for fav in user_favourites:
+        print(f"  - {fav.media.title} (ID: {fav.media.id})")
 
 
 def main():
@@ -88,6 +159,24 @@ def main():
         help="Add new media with type",
     )
 
+    # New favorite related commands
+    parser.add_argument(
+        "--favourite",
+        nargs=2,
+        metavar=("MEDIA_ID", "USER_ID"),
+        help="Favourite a particular media",
+    )
+    parser.add_argument(
+        "--unfavourite",
+        nargs=2,
+        metavar=("MEDIA_ID", "USER_ID"),
+        help="Unfavourite a particular media",
+    )
+    parser.add_argument(
+        "--show-favourites",
+        metavar="USER_ID",
+        help="Show all the favourite media of a user",
+    )
     args = (
         parser.parse_args()
     )  # Reads from the command line, validates input, and stores values in a namespace.
@@ -107,6 +196,15 @@ def main():
     elif args.add_media:
         title, media_type = args.add_media
         add_media(title, media_type)
+    elif args.favourite:
+        media_id, user_id = args.favourite
+        add_favourite(media_id, user_id)
+    elif args.unfavourite:
+        media_id, user_id = args.unfavourite
+        remove_favourite(media_id, user_id)
+    elif args.show_favourites:
+        user_id = args.show_favourites
+        show_favourites(user_id)
     else:
         parser.print_help()
 
