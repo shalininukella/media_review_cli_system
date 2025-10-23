@@ -16,6 +16,6 @@ def get_session():
     return SessionLocal()
 
 def init_db():
-    from models import User, Media, Reviews
+    from app.models import User, Media, Reviews
     Base.metadata.create_all(bind=engine)
-    print("Database initialised at: ", DB_PATH)
+    print("Database initialised at:", DB_PATH)
