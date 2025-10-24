@@ -7,7 +7,8 @@ cache = redis.Redis(
     decode_responses=True,
 )
 
-def cache_set(key, value, ttl=600):
+# expiry in - 5 mins
+def cache_set(key, value, ttl=300):
     cache.setex(key, ttl, value)
 
 def cache_get(key):
