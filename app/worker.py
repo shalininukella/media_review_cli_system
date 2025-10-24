@@ -3,7 +3,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from app.db import get_session
 from app.models import Reviews, User, Media
-from datetime import datetime
+from datetime import datetime, timezone
 
 lock = threading.Lock()
 
@@ -33,7 +33,7 @@ class ReviewWorker:
                     media_id=media.id,
                     rating=rating,
                     comment=comment,
-                    created_at=datetime.utcnow()
+                    created_at=datetime.now(timezone.utc)
                 )
                 session.add(review)
                 session.commit()
