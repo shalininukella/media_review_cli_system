@@ -4,6 +4,7 @@ from app.cli.review_commands import add_reviews, list_reviews
 from app.cli.favourite_commands import add_favourite, remove_favourite, show_favourites
 from app.cli.concurrency import concurrent_reviews
 from app.cli.recommendation_commands import get_top_rated, recommend_media
+from app.cli.user_commands import add_user, list_users
 
 def main():
     parser = argparse.ArgumentParser(description="Media Review CLI")
@@ -17,8 +18,9 @@ def main():
     parser.add_argument("--show-favourites", metavar="USER_ID", help="Show all the favourite media of a user")
     parser.add_argument("--concurrent", action="store_true", help="Simulate concurrent review submissions")
     parser.add_argument("--top-rated", action="store_true", help="Show top-rated media")
-    parser.add_argument("--recommend", type=int, help="Recommend media for a user")
-
+    parser.add_argument("--recommend", metavar="USER_ID", type=int, help="Recommend media for a user")
+    parser.add_argument("--add-user", metavar="NAME", help="Add a new user")
+    parser.add_argument("--list-users", action="store_true", help="List all users")
     args = parser.parse_args()
 
     if args.list:
@@ -48,5 +50,9 @@ def main():
     elif args.recommend:
         user_id = args.recommend
         recommend_media(user_id)
+    elif args.add_user:
+        add_user(args.add_user)
+    elif args.list_users:
+        list_users()
     else:
         parser.print_help()

@@ -7,6 +7,7 @@ from app.cache import cache
 
 def add_reviews(media_id, rating, comment):
     session = get_session()
+
     user_id = int(input("Enter the user Id: "))
     user = session.query(User).get(user_id)
     if not user:
@@ -18,6 +19,7 @@ def add_reviews(media_id, rating, comment):
     session.commit()
     print("Review added successfully!")
 
+    #observer - notifications
     media = session.query(Media).get(media_id)
     notifier = ReviewNotifier()
     observer = NotificationService()
@@ -26,6 +28,7 @@ def add_reviews(media_id, rating, comment):
 
     # invalidate cache for this media
     cache.delete(f"reviews:{media.title.lower()}")
+
 
 def list_reviews():
     session = get_session()

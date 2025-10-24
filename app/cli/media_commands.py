@@ -47,6 +47,7 @@ def search_by_title(title):
         ]
         for r in reviews:
             print(f"{r['rating']} — {r['comment']}")
+            
         # Store in Redis for next time
         cache_set(cache_key, json.dumps(reviews), ttl=120)  # 2 min cache
     else:
