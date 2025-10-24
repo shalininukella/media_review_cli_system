@@ -46,6 +46,7 @@ def main():
     elif args.top_rated:
         get_top_rated()
     elif args.recommend:
-        recommend_media(args.recommend)
+        user_id = args.recommend
+        recommend_media(user_id)
     else:
         parser.print_help()

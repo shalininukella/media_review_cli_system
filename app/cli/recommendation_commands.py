@@ -1,36 +1,19 @@
-# app/cli/media_commands.py
 from app.db import get_session
-from app.models import Media, Reviews, User
-from sqlalchemy import func
+from app.models import User
+from app.utils import get_media_with_avg_ratings
 
-# Top-Rated
-from app.db import get_session
-from app.models import Media
 
 def get_top_rated(limit=5):
     session = get_session()
-    media_list = session.query(Media).all()
-    rated = []
-
-    for media in media_list:
-        if media.reviews:
-            avg_rating = sum(r.rating for r in media.reviews) / len(media.reviews)
-            rated.append((media.title, avg_rating))
-
-    # sort by average rating descending
-    rated.sort(key=lambda x: x[1], reverse=True)
+    rated = get_media_with_avg_ratings(session)
     top = rated[:limit]
 
-    print("\nTop Rated Media:")
-    for title, avg in top:
-        print(f" - {title}: {avg:.1f}")
+    print("Top Rated Media:")
+    for media, avg in top:
+        print(f" - {media.title}: {avg:.1f}")
 
     session.close()
 
-
-# Recommendations
-from app.db import get_session
-from app.models import User, Media
 
 def recommend_media(user_id, limit=5):
     session = get_session()
@@ -39,17 +22,16 @@ def recommend_media(user_id, limit=5):
         print("User not found.")
         return
 
-    # IDs of media already favorited by the user
-    fav_ids = {m.id for m in user.favorites}
+    fav_ids = {m.id for m in user.favourites}
 
-    # Recommend any media not in user's favorites
-    all_media = session.query(Media).all()
-    recommended = [m.title for m in all_media if m.id not in fav_ids][:limit]
+    # Get sorted rated media and exclude favorites
+    rated = get_media_with_avg_ratings(session)
+    recommended = [(m, avg) for m, avg in rated if m.id not in fav_ids][:limit]
 
-    print(f"\nRecommendations for {user.name}:")
+    print(f"Recommendations for {user.name}:")
     if recommended:
-        for title in recommended:
-            print(f" - {title}")
+        for media, avg in recommended:
+            print(f" - {media.title} (avg rating: {avg:.1f})")
     else:
         print("No recommendations available.")
 
