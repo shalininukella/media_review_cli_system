@@ -6,6 +6,7 @@ from app.cli.media_commands import add_media
 # Add root to path so we can import app modules
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+
 def seed_dev_data():
     print("Seeding development data...")
 

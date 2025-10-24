@@ -8,5 +8,5 @@ from app.db import init_db
 
 if __name__ == "__main__":
     init_db()
-    print("Database initialized at:", Path("data/media_review.db").resolve())
-    print("No seed data added. Use CLI commands to add users or media.")
+    # print("Database initialized at:", Path("data/media_review.db").resolve())
+    # print("No seed data added. Use CLI commands to add users or media.")
