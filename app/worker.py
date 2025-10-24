@@ -8,17 +8,17 @@ from datetime import datetime, timezone
 lock = threading.Lock()
 
 class ReviewWorker:
-    """Handles concurrent review submissions safely."""
+    # Handles concurrent review submissions safely.
 
     def __init__(self, max_workers=5):
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
     def submit_review(self, user_id, media_id, rating, comment):
-        """Submit a review in a separate thread."""
+        #Submit a review in a separate thread - returns a future and goes back to the for loop
         return self.executor.submit(self._process_review, user_id, media_id, rating, comment)
 
     def _process_review(self, user_id, media_id, rating, comment):
-        """Actual work done inside each thread."""
+        # Actual work done inside each thread.
         session = get_session()
         try:
             user = session.get(User, user_id)
@@ -38,13 +38,16 @@ class ReviewWorker:
                 session.add(review)
                 session.commit()
                 return f" Review added by {user.name} for '{media.title}'"
+            
         except Exception as e:
             session.rollback()
             return f" Error: {e}"
+        
         finally:
             session.close()
 
     def wait_for_all(self, futures):
-        """Wait for all threads to complete."""
+        # Wait for all threads to complete.
         for future in as_completed(futures):
-            print(future.result())
+            res = future.result()
+            print(res)

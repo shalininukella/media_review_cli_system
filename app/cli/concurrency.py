@@ -13,8 +13,8 @@ def concurrent_reviews():
         futures.append(
             worker.submit_review(
                 user_id=user.id,
-                media_id=1,
-                rating=4.5 - i * 0.5,
+                media_id=i + 1,
+                rating=5 - i * 0.5,
                 comment=f"Review from {user.name}",
             )
         )

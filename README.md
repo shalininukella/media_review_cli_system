@@ -3,7 +3,7 @@
 A command-line application to review Movies, Web Shows, and Songs.
 
 ## 📁 Project Structure
-
+```bash
 media_review/
 ├── app/
 │ ├── init.py
