@@ -1,14 +1,13 @@
-from pathlib import Path
-import sys
+import logging
 from app.cli.user_commands import add_user
 from app.cli.media_commands import add_media_command
 
-# Add root to path so we can import app modules
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def seed_dev_data():
-    print("Seeding development data...")
+    logger.info("Seeding development data...")
 
     # Users
     users = ["Alice", "Bob", "Charlie"]
@@ -24,8 +23,10 @@ def seed_dev_data():
     for title, media_type in media_list:
         add_media_command(title, media_type)
 
-    print("Development data seeded.")
+    logger.info("Development data seeded.")
 
+def main():
+    seed_dev_data()
 
 if __name__ == "__main__":
-    seed_dev_data()
+    main()

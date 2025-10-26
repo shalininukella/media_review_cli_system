@@ -1,12 +1,14 @@
 from pathlib import Path
-import sys
-
-# Add root folder to path so we can import root.db
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
+import logging
 from app.core.db import init_db
 
-if __name__ == "__main__":
+# Setup basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def main():
     init_db()
-    # print("Database initialized at:", Path("data/media_review.db").resolve())
-    # print("No seed data added. Use CLI commands to add users or media.")
+    logger.info("Database initialized at: %s", Path("data/media_review.db").resolve())
+
+if __name__ == "__main__":
+    main()
