@@ -1,22 +1,23 @@
-from app.db import get_session
-from app.models import User
-from app.worker import ReviewWorker
+from app.services.concurrency_service import ReviewWorker
 
-def concurrent_reviews():
-    worker = ReviewWorker(max_workers=3)
-    session = get_session()
-    users = session.query(User).all()
-    session.close()
+def concurrent_reviews_command(args_list):
+    """
+    args_list: list of strings from CLI, e.g.
+    ["1", "2", "4.5", "Great movie", "2", "1", "3.0", "Not bad"]
+    """
+    # Convert args_list to chunks of 4 (user_id, media_id, rating, comment)
+    if len(args_list) % 4 != 0:
+        print("Error: Each review must have USER_ID MEDIA_ID RATING COMMENT")
+        return
 
-    futures = []
-    for i, user in enumerate(users[:3]):
-        futures.append(
-            worker.submit_review(
-                user_id=user.id,
-                media_id=i + 1,
-                rating=5 - i * 0.5,
-                comment=f"Review from {user.name}",
-            )
-        )
+    reviews = []
+    for i in range(0, len(args_list), 4):
+        user_id = int(args_list[i])
+        media_id = int(args_list[i+1])
+        rating = float(args_list[i+2])
+        comment = args_list[i+3]
+        reviews.append((user_id, media_id, rating, comment))
 
+    worker = ReviewWorker(max_workers=len(reviews))
+    futures = [worker.submit_review(*r) for r in reviews]
     worker.wait_for_all(futures)

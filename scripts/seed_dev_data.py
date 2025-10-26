@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 from app.cli.user_commands import add_user
-from app.cli.media_commands import add_media
+from app.cli.media_commands import add_media_command
 
 # Add root to path so we can import app modules
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -22,7 +22,7 @@ def seed_dev_data():
         ("Shape of You", "song"),
     ]
     for title, media_type in media_list:
-        add_media(title, media_type)
+        add_media_command(title, media_type)
 
     print("Development data seeded.")
 

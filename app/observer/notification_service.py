@@ -1,4 +1,4 @@
-from app.models import Favourites
+from app.core.models import Favourites
 from app.observer.base import Observer
 
 
