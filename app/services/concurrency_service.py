@@ -1,47 +1,29 @@
-import threading
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from app.core.db import get_session
-from app.core.models import Reviews, User, Media
-from datetime import datetime, timezone
+from app.services.review_service import add_review
 
-lock = threading.Lock()
+# Configure logging for this module
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 class ReviewWorker:
-    """Handles concurrent review submissions safely."""
+    """Handles concurrent review submissions safely using add_review."""
 
     def __init__(self, max_workers=5):
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
-    def submit_review(self, user_id, media_id, rating, comment):
-        """Submit a review asynchronously."""
-        return self.executor.submit(self._process_review, user_id, media_id, rating, comment)
-
-    def _process_review(self, user_id, media_id, rating, comment):
-        session = get_session()
-        try:
-            user = session.get(User, user_id)
-            media = session.get(Media, media_id)
-            if not user or not media:
-                return f"Invalid user ({user_id}) or media ({media_id})"
-
-            with lock:  # prevent race conditions on same DB write
-                review = Reviews(
-                    user_id=user.id,
-                    media_id=media.id,
-                    rating=rating,
-                    comment=comment,
-                    created_at=datetime.now(timezone.utc)
-                )
-                session.add(review)
-                session.commit()
-                return f"Review added by {user.name} for '{media.title}'"
-        except Exception as e:
-            session.rollback()
-            return f"Error: {e}"
-        finally:
-            session.close()
+    def submit_review(self, user_id: int, media_id: int, rating: float, comment: str):
+        """Submit a review asynchronously via add_review."""
+        return self.executor.submit(add_review, user_id, media_id, rating, comment)
 
     def wait_for_all(self, futures):
+        """Wait for all submitted reviews to complete and log the results."""
         for future in as_completed(futures):
-            res = future.result()
-            print(res)
+            result = future.result()  # this is the dict returned by add_review
+            if result.get("success"):
+                logger.info(result.get("message"))
+            else:
+                logger.warning(result.get("message"))
