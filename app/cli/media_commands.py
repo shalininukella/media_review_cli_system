@@ -1,54 +1,35 @@
-from app.db import get_session
-from app.models import Media
-from app.media_factory import MediaFactory
-from app.cache import cache_get, cache_set
-import json
+from app.services import media_service
 
+def list_media_command():
+    medias = media_service.list_media()
+    if not medias:
+        print("No media found.")
+        return
 
-def list_media():
-    session = get_session()
-    medias = session.query(Media).all()
+    print("All Media:")
     for m in medias:
-        print(f"[{m.id}] {m.title} ({m.type})")
+        print(f"[{m['id']}] {m['title']} ({m['type']})")
 
 
-def add_media(title, media_type):
-    session = get_session()
-    media_row = MediaFactory.create_media(title, media_type)
-    session.add(media_row)
-    session.commit()
-    print(f"Added {media_type} '{title}' to database!")
+def add_media_command(title, media_type):
+    result = media_service.add_media(title, media_type)
+    print(result["message"])
 
 
-def search_by_title(title):
-    cache_key = f"reviews:{title.lower()}"
+def search_by_title_command(title):
+    result = media_service.search_media_by_title(title)
 
-    # fetch from Redis
-    cached = cache_get(cache_key)
-    if cached:
-        print(f"(from cache) Reviews for '{title}':")
-        reviews = json.loads(cached)
-        for r in reviews:
-            print(f"{r['rating']} — {r['comment']}")
+    if not result.get("success", True) and "message" in result:
+        print(result["message"])
         return
 
-    # If not cached, fetch from DB
-    session = get_session()
-    media_row = session.query(Media).filter_by(title=title).first()
-    if not media_row:
-        print(f"No media found with title '{title}'")
-        return
+    source = "(from cache)" if result.get("cached") else ""
+    print(f"{source} {result['title']} ({result.get('type', '')})")
 
-    print(f"{media_row.title}, ({media_row.type})")
-
-    if media_row.reviews:
-        reviews = [
-            {"rating": r.rating, "comment": r.comment} for r in media_row.reviews
-        ]
+    reviews = result.get("reviews", [])
+    if reviews:
+        print("Reviews:")
         for r in reviews:
-            print(f"{r['rating']} — {r['comment']}")
-            
-        # Store in Redis for next time
-        cache_set(cache_key, json.dumps(reviews), ttl=120)  # 2 min cache
+            print(f"  {r['rating']} — {r['comment']}")
     else:
         print("No reviews yet.")

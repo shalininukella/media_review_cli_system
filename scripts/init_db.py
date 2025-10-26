@@ -4,7 +4,7 @@ import sys
 # Add root folder to path so we can import root.db
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from app.db import init_db
+from app.core.db import init_db
 
 if __name__ == "__main__":
     init_db()
