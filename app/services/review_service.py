@@ -1,7 +1,7 @@
 import logging
 from app.core.db import get_session
 from app.core.models import Media, Reviews, User
-from app.core.cache import cache
+from app.cache import cache
 from app.observer.observer_manager import ReviewNotifier
 from app.observer import NotificationService
 

@@ -1,7 +1,7 @@
 import logging
 from app.core.db import get_session
 from app.core.models import User
-from app.core.utils import get_media_with_avg_ratings
+from app.utils import get_media_with_avg_ratings
 
 logger = logging.getLogger(__name__)
 

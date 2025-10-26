@@ -2,7 +2,7 @@ import json
 import logging
 from app.core.db import get_session
 from app.core.models import Media
-from app.core.cache import cache_get, cache_set
+from app.cache import cache_get, cache_set
 from app.core.media_factory import MediaFactory
 
 logger = logging.getLogger(__name__)
