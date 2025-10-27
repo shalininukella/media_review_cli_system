@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from app.core.db import Base
 import datetime
 
-# ----------------- Reviews -----------------
+# Reviews
 class Reviews(Base):
     __tablename__ = "reviews"
     id = Column(Integer, primary_key=True, index=True)
@@ -17,7 +17,7 @@ class Reviews(Base):
     media = relationship("Media", back_populates="reviews")
 
 
-# ----------------- Users -----------------
+# Users
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -27,7 +27,7 @@ class User(Base):
     favourites = relationship("Favourites", back_populates="user")
 
 
-# ----------------- Media -----------------
+# Media
 class Media(Base):
     __tablename__ = "media"
     id = Column(Integer, primary_key=True, index=True)
@@ -52,7 +52,7 @@ class Song(Media):
     __mapper_args__ = {"polymorphic_identity": "song"}
 
 
-# ----------------- Favourites (association) -----------------
+# Favourites (association)
 class Favourites(Base):
     __tablename__ = "favourites"
     id = Column(Integer, primary_key=True)

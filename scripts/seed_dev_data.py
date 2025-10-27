@@ -1,6 +1,6 @@
 import logging
-from app.cli.user_commands import add_user
-from app.cli.media_commands import add_media_command
+from app.cli.commands.user_commands import add_user
+from app.cli.commands.media_commands import add_media_command
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

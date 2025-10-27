@@ -1,19 +1,31 @@
+import logging
+from sqlalchemy.orm import joinedload
 from app.core.models import Favourites
 from app.observer.base import Observer
 
+logger = logging.getLogger(__name__)
 
 class NotificationService(Observer):
-
     def update(self, media, review, session):
-        users_of_favourite_media = session.query(Favourites).filter_by(media_id=media.id).all()
+        try:
+            # Eagerly load user relationship
+            favourites = (
+                session.query(Favourites)
+                .options(joinedload(Favourites.user))
+                .filter_by(media_id=media.id)
+                .all()
+            )
 
-        if not users_of_favourite_media:
-            print(f"No users favorited '{media.title}', skip notification.")
-            return
+            if not favourites:
+                logger.info(f"No favourites for '{media.title}'.")
+                return
 
-        print(f"Sending notifications for '{media.title}'...")
-        for fav in users_of_favourite_media:
-            print(f"Notifying {fav.user.name}: New review added (Rating: {review.rating})")
+            logger.info(f"Sending notifications for '{media.title}' to {len(favourites)} users.")
+            for fav in favourites:
+                logger.info(f"Notifying {fav.user.name}: New review added (Rating: {review.rating})")
+
+        except Exception as e:
+            logger.exception(f"Notification error for '{media.title}': {e}")
 
 
 # Example of an additional observer (optional)

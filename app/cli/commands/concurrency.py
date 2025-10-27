@@ -4,11 +4,8 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 def concurrent_reviews_command(args_list):
-    """
-    args_list: list of strings from CLI, e.g.
-    ["1", "2", "4.5", "Great movie", "2", "1", "3.0", "Not bad"]
-    """
     if len(args_list) % 4 != 0:
         logger.error("Each review must have USER_ID MEDIA_ID RATING COMMENT")
         return
