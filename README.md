@@ -10,54 +10,69 @@ A modular **command-line application** to manage and review **Movies, Web Shows,
 media_review/
 ├── app/
 │   ├── core/
-│   │   ├── db.py               # SQLAlchemy database setup
-│   │   └── models.py           # ORM models: User, Media, Reviews, Favourites
+│   │   ├── db.py                   # SQLAlchemy database setup
+│   │   └── models.py               # ORM models: User, Media, Reviews, Favourites
 │   │
 │   ├── services/
+│   │   ├── concurrency_service.py  # Handles concurrent (threaded) reviews
+│   │   ├── favourite_service.py    # Manage user favourites
+│   │   ├── media_service.py        # Media CRUD and review caching logic
 │   │   ├── recommendation_service.py  # Top-rated & personalized recommendations
-│   │   ├── favourite_service.py       # Manage user favourites
-│   │   ├── review_service.py          # Review creation & listing logic
-│   │   ├── concurrency_service.py     # Handles concurrent (threaded) reviews
-│   │   └── user_service.py    # listing and adding users
-│   │   ├── media_service.py  # Top-rated & personalized recommendations
+│   │   ├── review_service.py       # Review creation & listing logic
+│   │   └── user_service.py         # Listing and adding users
 │   │
-│   ├── observer/                 # Observer pattern for notifications
+│   ├── observer/                   # Observer pattern for notifications
 │   │   ├── __init__.py
-│   │   ├── base.py               # Observer & Subject base classes
-│   │   ├── observer_manager.py   # ReviewNotifier, attachment logic
-│   │   └── notifications_service.py  # Concrete notification services
+│   │   ├── base.py                 # Abstract Subject/Observer base classes
+│   │   ├── observer_manager.py     # ReviewNotifier: manages observer attachments
+│   │   └── notification_service.py # Concrete notification implementation
 │   │
-│   ├── cli/
-│   │   ├── main.py             # CLI command parser (entry for all CLI actions)
-│   │   ├── user_commands.py    # CLI commands for users
-│   │   ├── media_commands.py   # CLI commands for media
-│   │   ├── review_commands.py  # CLI commands for reviews
-│   │   ├── favourite_commands.py  # CLI commands for favourites
-│   │   ├── recommendation_commands.py  # CLI commands for recommendations
-│   │   └── concurrency.py      # CLI wrapper for concurrent review simulation
+│   ├── cli/                        
+│   │   ├── main.py                 # CLI entrypoint and argument parser
+│   │   ├── commands/               # Command-level logic for each entity
+│   │   │   ├── user_commands.py
+│   │   │   ├── media_commands.py
+│   │   │   ├── review_commands.py
+│   │   │   ├── favourite_commands.py
+│   │   │   └── recommendation_commands.py
+│   │   │
+│   │   └── handlers/               # CLI execution handlers for modularity - bridge between cli and core business logic
+│   │       ├── concurrency_handler.py
+│   │       └── favourites_handler.py
+│   │       ├── media_handler.py
+│   │       └── recommendation_handler.py
+│   │       ├── review_handler.py
+│   │       └── user_handler.py
 │   │
-│   ├── utils.py                # Common helper functions
-│   ├── cache.py                # Redis cache setup
-│   ├── logging_config.py       # Logging setup for app-wide logging
-│   └── media_factory.py        # Factory pattern for dynamic media creation
+│   ├── types/                      # TypedDict definitions for type-safe responses
+│   │   ├── favourite_types.py
+│   │   ├── media_types.py
+│   │   ├── recommendation_types.py
+│   │   ├── review_types.py
+│   │   └── user_types.py
+│   │
+│   ├── utils.py                    # Common helper utilities
+│   ├── cache.py                    # Redis cache setup
+│   ├── logging_config.py           # App-wide logging configuration
+│   └── media_factory.py            # Factory pattern for dynamic media creation
 │
 ├── scripts/
-│   ├── init_db.py              # Initialize empty database
-│   └── seed_dev_data.py        # Seed database with development data
+│   ├── init_db.py                  # Initialize an empty database
+│   └── seed_dev_data.py            # Seed database with dev/test data
 │
 ├── data/
-│   └── media_review.db         # SQLite database (auto-created)
+│   └── media_review.db             # SQLite database (auto-created)
 │
 ├── logs/
-│   └── app.log                 # Auto-generated log file
+│   └── app.log                     # Application log file
 │
-├── media_review.py             # Main CLI launcher
-├── docker-compose.yml          # Redis container setup
+├── media_review.py                 # Main CLI launcher
+├── docker-compose.yml              # Redis container setup
 ├── requirements.txt
 ├── Dockerfile
 └── README.md
-```
 
+```
 ---
 
 ## 🧰 Requirements
