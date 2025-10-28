@@ -1,13 +1,43 @@
+# version: "3.9"
+
+# services:
+#   redis:
+#     image: redis:7-alpine
+#     container_name: media_review_redis
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis_data:/data
+
+# volumes:
+#   redis_data:
+
+
 version: "3.9"
 
 services:
+  app:
+    build:
+      context: ..        # one level up (the project root)
+      dockerfile: docker/Dockerfile  # path to your Dockerfile
+    container_name: media_review_app
+    depends_on:
+      - redis
+    volumes:
+      - ../:/app         # mount the project root to /app inside the container
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: >
+      bash -c "
+      python scripts/init_db.py &&
+      python scripts/seed_dev_data.py &&
+      tail -f /dev/null
+      "
+    tty: true
+
   redis:
     image: redis:7-alpine
     container_name: media_review_redis
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-volumes:
-  redis_data:
