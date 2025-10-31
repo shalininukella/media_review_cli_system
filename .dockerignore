@@ -1,0 +1,33 @@
+# Ignore Python cache and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Logs
+*.log
+logs/
+
+# Git and Docker metadata
+.git/
+.gitignore
+.dockerignore
+
+# Local configs and secrets
+.env
+.env.*
+*.sqlite3
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
